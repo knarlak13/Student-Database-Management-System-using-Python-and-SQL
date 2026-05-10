@@ -1,46 +1,48 @@
 from flask import Flask
 import sqlite3
-import csv
 
 app = Flask(__name__)
 
 @app.route("/")
 def home():
 
-    conn = sqlite3.connect("database.db")
+    conn = sqlite3.connect(":memory:")
     cursor = conn.cursor()
 
-    # Create table
-    with open("schema.sql", "r") as f:
-        cursor.executescript(f.read())
+    cursor.execute("""
+        CREATE TABLE students (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            age INTEGER,
+            course TEXT,
+            marks INTEGER
+        )
+    """)
 
-    # Insert data from CSV
-    with open("data.csv", "r") as file:
-        reader = csv.DictReader(file, skipinitialspace=True)
+    students = [
+        ("Rahul", 20, "BCA", 85),
+        ("Anjali", 21, "BTech", 90),
+        ("Kiran", 19, "BSc", 78),
+        ("Sneha", 22, "BBA", 88),
+        ("Arjun", 20, "BCom", 82)
+    ]
 
-        for row in reader:
-            cursor.execute("""
-                INSERT OR IGNORE INTO students (name, age, course, marks)
-                VALUES (?, ?, ?, ?)
-            """, (
-                row['name'],
-                row['age'],
-                row['course'],
-                row['marks']
-            ))
+    cursor.executemany("""
+        INSERT INTO students (name, age, course, marks)
+        VALUES (?, ?, ?, ?)
+    """, students)
 
     conn.commit()
 
-    # Fetch data
     cursor.execute("SELECT * FROM students")
     rows = cursor.fetchall()
-
-    conn.close()
 
     html = "<h1>Student Database</h1>"
 
     for row in rows:
         html += f"<p>{row}</p>"
+
+    conn.close()
 
     return html
 
