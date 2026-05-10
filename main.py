@@ -1,30 +1,34 @@
- 
+from flask import Flask
 import sqlite3
 import csv
 
-conn = sqlite3.connect("database.db")
-cursor = conn.cursor()
+app = Flask(__name__)
 
-# Create table
-with open("schema.sql", "r") as f:
-    cursor.executescript(f.read())
+@app.route("/")
+def home():
 
-# Insert data from CSV
-with open("data.csv", "r") as file:
-    reader = csv.DictReader(file, skipinitialspace=True)
-    for row in reader:
-        cursor.execute("""
-            INSERT INTO students (name, age, course, marks)
-            VALUES (?, ?, ?, ?)
-        """, (row['name'], row['age'], row['course'], row['marks']))
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
 
-conn.commit()
+    # Create table
+    with open("schema.sql", "r") as f:
+        cursor.executescript(f.read())
 
-# Display data
-cursor.execute("SELECT * FROM students")
-rows = cursor.fetchall()
+    # Insert data
+    with open("data.csv", "r") as file:
+        reader = csv.DictReader(file, skipinitialspace=True)
 
-for row in rows:
-    print(row)
+        for row in reader:
+            cursor.execute("""
+                INSERT INTO students (name, age, course, marks)
+                VALUES (?, ?, ?, ?)
+            """, (row['name'], row['age'], row['course'], row['marks']))
 
-conn.close()
+    conn.commit()
+
+    cursor.execute("SELECT * FROM students")
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    return str(rows)
