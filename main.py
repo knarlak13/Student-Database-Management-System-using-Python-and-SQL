@@ -1,8 +1,3 @@
-from flask import Flask
-import sqlite3
-
-app = Flask(__name__)
-
 @app.route("/")
 def home():
 
@@ -37,15 +32,77 @@ def home():
     cursor.execute("SELECT * FROM students")
     rows = cursor.fetchall()
 
-    html = "<h1>Student Database</h1>"
+    html = """
+    <html>
+    <head>
+        <title>Student Database</title>
+
+        <style>
+            body {
+                font-family: Arial;
+                padding: 40px;
+                background-color: #f4f4f4;
+            }
+
+            h1 {
+                color: #333;
+            }
+
+            table {
+                border-collapse: collapse;
+                width: 80%;
+                background: white;
+            }
+
+            th, td {
+                border: 1px solid #ddd;
+                padding: 12px;
+                text-align: center;
+            }
+
+            th {
+                background-color: #4CAF50;
+                color: white;
+            }
+
+            tr:nth-child(even) {
+                background-color: #f2f2f2;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <h1>Student Database Management System</h1>
+
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Course</th>
+                <th>Marks</th>
+            </tr>
+    """
 
     for row in rows:
-        html += f"<p>{row}</p>"
+        html += f"""
+            <tr>
+                <td>{row[0]}</td>
+                <td>{row[1]}</td>
+                <td>{row[2]}</td>
+                <td>{row[3]}</td>
+                <td>{row[4]}</td>
+            </tr>
+        """
+
+    html += """
+        </table>
+
+    </body>
+    </html>
+    """
 
     conn.close()
 
     return html
-
-
-if __name__ == "__main__":
-    app.run()
