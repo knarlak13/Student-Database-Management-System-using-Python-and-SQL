@@ -1,3 +1,4 @@
+print("NEW VERSION RUNNING")
 @app.route("/")
 def home():
 
