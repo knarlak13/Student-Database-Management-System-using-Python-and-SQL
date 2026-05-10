@@ -14,21 +14,36 @@ def home():
     with open("schema.sql", "r") as f:
         cursor.executescript(f.read())
 
-    # Insert data
+    # Insert data from CSV
     with open("data.csv", "r") as file:
         reader = csv.DictReader(file, skipinitialspace=True)
 
         for row in reader:
             cursor.execute("""
-                INSERT INTO students (name, age, course, marks)
+                INSERT OR IGNORE INTO students (name, age, course, marks)
                 VALUES (?, ?, ?, ?)
-            """, (row['name'], row['age'], row['course'], row['marks']))
+            """, (
+                row['name'],
+                row['age'],
+                row['course'],
+                row['marks']
+            ))
 
     conn.commit()
 
+    # Fetch data
     cursor.execute("SELECT * FROM students")
     rows = cursor.fetchall()
 
     conn.close()
 
-    return str(rows)
+    html = "<h1>Student Database</h1>"
+
+    for row in rows:
+        html += f"<p>{row}</p>"
+
+    return html
+
+
+if __name__ == "__main__":
+    app.run()
